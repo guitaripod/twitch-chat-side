@@ -1,0 +1,26 @@
+.tcside-shell {
+  position: relative;
+}
+
+.tcside-tooltip {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 1rem);
+  z-index: 5000;
+  transform: translateY(-50%);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius-medium, 0.4rem);
+  background-color: var(--color-background-tooltip, #fff);
+  color: var(--color-text-tooltip, #0e0e10);
+  font-size: var(--font-size-6, 1.4rem);
+  font-weight: var(--font-weight-semibold, 600);
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tcside-shell:hover .tcside-tooltip,
+.tcside-button:focus-visible + .tcside-tooltip {
+  display: block;
+}
