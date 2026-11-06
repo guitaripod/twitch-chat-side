@@ -7,6 +7,7 @@
   const AUTO_PROFILE_NAME = 'Twitch Chat Side (monitor)';
   const HEADER_SELECTOR = '.right-column .stream-chat-header';
   const COLUMN_SELECTOR = '.right-column';
+  const SCREEN_ATTRIBUTE = 'data-tcside-screen';
   const BELOW_CLASS = 'right-column--below';
   const COMMUNITY_SELECTOR = '[data-test-selector="chat-viewer-list"]';
   const COLLAPSE_SELECTOR = '[data-a-target="right-column__toggle-collapse-btn"]';
@@ -58,11 +59,18 @@
   }
 
   /**
-   * Flips FFZ's Swap Sidebars setting, and asks to follow the monitor while the click's user gesture lets the permission prompt show.
+   * Flips FFZ's Swap Sidebars setting, and, without the native host, asks to follow the monitor while the click's user gesture lets the permission prompt show.
    */
   function toggle() {
     targetProfile().set(SETTING, !isSwapped());
-    watchScreens();
+    if (!hostScreen()) watchScreens();
+  }
+
+  /**
+   * The monitor the native host reports for this tab's window, which is reliable on KDE Plasma where the browser's own answer goes stale.
+   */
+  function hostScreen() {
+    return document.documentElement.dataset.tcsideScreen ?? null;
   }
 
   /**
@@ -114,7 +122,7 @@
   function applyScreenSide() {
     const column = document.querySelector(COLUMN_SELECTOR);
     observeColumn(column);
-    const label = screens?.currentScreen?.label ?? '';
+    const label = hostScreen() ?? screens?.currentScreen?.label ?? '';
     const landscape = isLandscapeLayout(column);
     const key = `${label}|${landscape}`;
     if (key === autoKey) return;
@@ -264,6 +272,7 @@
     settings.onChange('layout.use-portrait', schedule);
     settings.main_context?.on?.('context_changed', schedule);
     new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(schedule).observe(document.documentElement, { attributes: true, attributeFilter: [SCREEN_ATTRIBUTE] });
     requestScreens();
     schedule();
   }

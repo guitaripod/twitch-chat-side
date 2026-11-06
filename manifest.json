@@ -1,9 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Twitch Chat Side",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A native-looking Twitch chat header button that moves chat to the other side, with a side per monitor. Needs FrankerFaceZ.",
   "minimum_chrome_version": "111",
+  "permissions": ["nativeMessaging", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://www.twitch.tv/*"],
@@ -11,6 +15,11 @@
       "css": ["content.css"],
       "run_at": "document_idle",
       "world": "MAIN"
+    },
+    {
+      "matches": ["https://www.twitch.tv/*"],
+      "js": ["bridge.js"],
+      "run_at": "document_idle"
     }
   ],
   "icons": {
