@@ -24,7 +24,7 @@
   let tooltip = null;
   let scheduled = false;
   let screens = null;
-  let screensPending = null;
+  let screensPending = false;
   let autoProfile = null;
   let autoKey = null;
   let observedColumn = null;
@@ -58,7 +58,7 @@
   }
 
   /**
-   * Flips FFZ's Swap Sidebars setting, and retries following the monitor now that there is a user gesture.
+   * Flips FFZ's Swap Sidebars setting, and asks to follow the monitor while the click's user gesture lets the permission prompt show.
    */
   function toggle() {
     targetProfile().set(SETTING, !isSwapped());
@@ -129,7 +129,8 @@
    */
   function watchScreens() {
     if (screens || screensPending || !window.getScreenDetails) return;
-    screensPending = window.getScreenDetails()
+    screensPending = true;
+    window.getScreenDetails()
       .then(details => {
         screens = details;
         screens.addEventListener('currentscreenchange', applyScreenSide);
@@ -137,26 +138,22 @@
       })
       .catch(() => {})
       .finally(() => {
-        screensPending = null;
+        screensPending = false;
       });
   }
 
   /**
-   * Follows the monitor now when the permission allows it, and again whenever it is granted later.
+   * Follows the monitor once the permission is granted. A request made outside a click can stay pending without any visible prompt, so asking waits for the button.
    */
   function requestScreens() {
-    if (!navigator.permissions) {
-      watchScreens();
-      return;
-    }
-    navigator.permissions.query({ name: 'window-management' })
+    navigator.permissions?.query({ name: 'window-management' })
       .then(status => {
-        if (status.state !== 'denied') watchScreens();
+        if (status.state === 'granted') watchScreens();
         status.addEventListener('change', () => {
           if (status.state === 'granted') watchScreens();
         });
       })
-      .catch(watchScreens);
+      .catch(() => {});
   }
 
   /**
